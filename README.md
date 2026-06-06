@@ -1,9 +1,13 @@
 # Sunduk
 
-A small YubiKey PIV-backed local token vault and runner for command-line tools.
+A tool that keeps a program's API tokens encrypted and unlocks them with your
+YubiKey only while the program runs.
 
-**Simple by default** — run `sunduk gh api user` instead of storing your GitHub token in plaintext.  
+**Simple by default** — run `sunduk gh api user` instead of saving your GitHub token to a file.  
 **Powerful when needed** — use profiles for `gh`, `npm`, `claude`, custom scripts, and other token-based CLIs.
+
+The token is passed to the program through an environment variable and exists
+only for that run.
 
 ## Quick Start
 
@@ -108,15 +112,6 @@ sudo apt install openssl opensc pcscd libengine-pkcs11-openssl sudo yubico-piv-t
 sudo systemctl enable --now pcscd
 ```
 
-> **You also need a YubiKey PIV key and certificate** — these aren't created by
-> installation. Generate them with `scripts/yubikey-setup.sh`, or set them up
-> yourself; see [docs/yubikey-setup.md](docs/yubikey-setup.md). Without them,
-> Sunduk cannot decrypt tokens.
->
-> ⚠️ The setup script overwrites PIV slot `9d`. If your YubiKey already holds
-> important keys, read the warning in
-> [docs/yubikey-setup.md](docs/yubikey-setup.md) before running it.
-
 ### Install as a single-file executable
 
 ```bash
@@ -138,16 +133,16 @@ sunduk --help
 
 ### 1. Set up the YubiKey
 
-Before configuring Sunduk, generate the PIV key and certificate:
+Generate the PIV key and certificate before configuring Sunduk:
+
+> ⚠️ The `yubikey-setup` script overwrites PIV slot `9d`. If your YubiKey
+> already holds important keys, **stop and read
+> [docs/yubikey-setup.md](docs/yubikey-setup.md)** — it covers the warning in
+> full and explains what the script does and how to verify it.
 
 ```bash
 scripts/yubikey-setup.sh
 ```
-
-This creates `~/.config/sunduk/yk1_piv_9d_public.pem` and
-`yk1_piv_9d_cert.pem`, and imports the certificate into the YubiKey. See
-[docs/yubikey-setup.md](docs/yubikey-setup.md) for what it does and how to
-verify it.
 
 ### 2. Create the config
 
