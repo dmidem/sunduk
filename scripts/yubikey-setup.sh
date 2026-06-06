@@ -17,7 +17,6 @@
 #
 # Env:
 #   SUNDUK_DIR=...        output directory (default: ~/.config/sunduk)
-#   SUNDUK_ASSUME_YES=1   skip the interactive confirmation (use with care)
 #
 # NO WARRANTY. Provided as-is under the project license (Apache-2.0 / MIT).
 # You run this at your own risk and are responsible for your YubiKey.
