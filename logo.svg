@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" width="280" height="80">
+  <g transform="translate(10, -10)">
+    <path d="M26 44 C26 24 74 24 74 44" fill="none" stroke="#2f81f7" stroke-width="8" stroke-linecap="round"/>
+    <rect x="22" y="44" width="56" height="32" rx="4" fill="#2f81f7" />
+    <line x1="22" y1="44" x2="78" y2="44" stroke="#ffffff" stroke-width="3" />
+    <rect x="42" y="38" width="16" height="18" rx="2" fill="#24292e" />
+    <circle cx="50" cy="45" r="3" fill="#ffffff" />
+    <path d="M48.5 45 L47 52 H53 L51.5 45 Z" fill="#ffffff" />
+  </g>
+
+  <text
+    x="105"
+    y="45"
+    fill="#24292e"
+    stroke="#ffffff"
+    stroke-width="3"
+    stroke-linejoin="round"
+    paint-order="stroke fill"
+    dominant-baseline="central"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-size="44px"
+    font-weight="800"
+    letter-spacing="-1px">Sunduk</text>
+</svg>

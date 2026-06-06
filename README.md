@@ -1,6 +1,8 @@
-# Sunduk
+<p align="center">
+  <img src="logo.svg" alt="Sunduk">
+</p>
 
-A tool that keeps a program's API tokens encrypted and unlocks them with your
+**Sunduk** is a tool that keeps a program's API tokens encrypted and unlocks them with your
 YubiKey only while the program runs.
 
 **Simple by default** — run `sunduk gh api user` instead of saving your GitHub token to a file.  
