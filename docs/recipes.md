@@ -233,7 +233,7 @@ Manual checks if `--doctor` flags something:
 sudo systemctl enable --now pcscd                 # PC/SC daemon
 openssl engine -t -c pkcs11                        # OpenSSL pkcs11 engine
 find /usr/lib -name opensc-pkcs11.so 2>/dev/null   # OpenSC module path
-pkcs11-tool --module /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so -O  # YubiKey objects
+pkcs11-tool --module /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so -O  # PIV token objects
 ```
 
 ## File Permissions

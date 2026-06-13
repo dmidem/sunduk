@@ -3,7 +3,8 @@
 Complete reference for Sunduk's CLI options and config fields.
 
 - New here? Start with the [README](../README.md) and [recipes.md](recipes.md).
-- Setting up the YubiKey? See [yubikey-setup.md](yubikey-setup.md).
+- Setting up your PIV token? See [yubikey-setup.md](yubikey-setup.md) (YubiKey)
+  or your token's documentation.
 
 For the exact, always-current command synopsis, run:
 
@@ -54,7 +55,7 @@ Notes on the ones that aren't self-explanatory:
   `run_mode`, `cert`, and `pkcs11_uri`, but runs the command after `--` instead
   of the profile's own `command`. That command must be an absolute path.
 - **`--verbose`** — by default Sunduk hides OpenSSL/OpenSC noise and prints a
-  short hint on decrypt failure. Add `-v` when diagnosing YubiKey/PKCS#11
+  short hint on decrypt failure. Add `-v` when diagnosing PIV token/PKCS#11
   problems.
 - **`--pkcs11-module` / `--engine-dir`** — Sunduk auto-detects both; you only
   need these on unusual installs.
@@ -144,8 +145,8 @@ sunduk --encrypt-token gh        # prompts for a token, stores it for profile gh
 sunduk --decrypt-token gh        # prints the token to stdout (errors -> stderr)
 ```
 
-Encryption needs only the **public certificate** — no YubiKey. Decryption needs
-the **YubiKey** (PIN + touch).
+Encryption needs only the **public certificate** — no hardware token. Decryption
+needs the **PIV token** (PIN, and touch if your token supports it).
 
 For files outside a profile:
 

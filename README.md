@@ -3,7 +3,7 @@
 </p>
 
 **Sunduk** is a tool that keeps a program's API tokens encrypted and unlocks them with your
-YubiKey only while the program runs.
+PIV-compatible hardware token (YubiKey and others) only while the program runs.
 
 **Simple by default** — run `sunduk gh api user` instead of saving your GitHub token to a file.  
 **Powerful when needed** — use profiles for `gh`, `npm`, `claude`, custom scripts, and other token-based CLIs.
@@ -13,18 +13,23 @@ only for that run.
 
 ## Quick Start
 
+The steps below use **YubiKey** as an example. For other PIV-compatible devices, adapt these steps according
+to your vendor's documentation.
+
 ```bash
 # 1. Install dependencies on Debian/Ubuntu
 sudo apt update
-sudo apt install openssl opensc pcscd libengine-pkcs11-openssl sudo yubico-piv-tool
+sudo apt install openssl opensc pcscd libengine-pkcs11-openssl
 sudo systemctl enable --now pcscd
+
+# Install YubiKey specific tools
+sudo apt install yubico-piv-tool
 
 # 2. Install Sunduk
 sudo install -o root -g root -m 0755 sunduk.py /usr/local/bin/sunduk
 
-# 3. Generate the YubiKey PIV key and certificate (slot 9d)
-#    WARNING: this creates/overwrites slot 9d. If your YubiKey already holds
-#    important keys, set it up manually instead — see docs/yubikey-setup.md.
+# 3. Set up PIV key and certificate (YubiKey slot 9d)
+# WARNING: Overwrites slot 9d. See docs/yubikey-setup.md before running.
 scripts/yubikey-setup.sh
 
 # 4. Create config, then uncomment the profiles you need
@@ -52,16 +57,17 @@ sunduk --with gh -- /home/user/bin/my-gh-script.sh
 
 ### What It Does
 
-Sunduk stores API tokens encrypted on disk and decrypts them only when needed using a YubiKey PIV private key.
+Sunduk stores API tokens encrypted on disk and decrypts them only when needed using a PIV private
+key stored in a hardware token.
 
 ```text
 API token
   -> encrypted CMS file on disk
-  -> decrypted through YubiKey PIV
+  -> decrypted through a PIV hardware token
   -> passed to a command via environment variable
 ```
 
-The private key stays inside the YubiKey.
+The private key stays inside the hardware token.
 
 Sunduk works with tools like `gh`, `npm`, `claude`, `curl`, package-publishing tools, custom scripts, and other CLIs that accept tokens via environment variables.
 
@@ -69,7 +75,7 @@ Sunduk works with tools like `gh`, `npm`, `claude`, `curl`, package-publishing t
 
 - single standalone Python script with TOML configuration
 - no GPG agent, no SSH agent, no background secret daemon
-- YubiKey PIV-based decryption with PIN prompt and touch confirmation
+- PIV-based decryption via OpenSC/PKCS#11 — works with any PIV-compatible token (YubiKey and others)
 - OpenSSL CMS encryption and OpenSC PKCS#11 integration
 - clean `stdout` for decrypted tokens; prompts and errors go to `stderr`
 - run tools as current user or isolated user
@@ -78,10 +84,11 @@ Sunduk works with tools like `gh`, `npm`, `claude`, `curl`, package-publishing t
 
 ### Documentation
 
-- [docs/yubikey-setup.md](docs/yubikey-setup.md) — YubiKey PIV setup
+- [docs/yubikey-setup.md](docs/yubikey-setup.md) — PIV token setup (YubiKey)
 - [docs/options.md](docs/options.md) — CLI and config reference
 - [docs/recipes.md](docs/recipes.md) — practical examples for common CLIs and scripts
 - [docs/threat-model.md](docs/threat-model.md) — security model and remaining risks
+- [docs/alternatives.md](docs/alternatives.md) — alternatives and trade-offs
 
 ### Security Model
 
@@ -94,7 +101,7 @@ It does not protect against:
 - malicious target applications
 - malicious shell/session
 - a fully compromised user account
-- losing the YubiKey private key
+- losing the hardware token or its PIV key
 - overprivileged API tokens
 
 Read [docs/threat-model.md](docs/threat-model.md).
@@ -105,14 +112,17 @@ Read [docs/threat-model.md](docs/threat-model.md).
 
 - Debian/Ubuntu (primary target)
 - Python 3.11+
-- A YubiKey with PIV support
+- A PIV-compatible hardware token (YubiKey 4/5, Nitrokey HSM 2, and others)
 - The packages below
 
 ```bash
 sudo apt update
-sudo apt install openssl opensc pcscd libengine-pkcs11-openssl sudo yubico-piv-tool
+sudo apt install openssl opensc pcscd libengine-pkcs11-openssl
 sudo systemctl enable --now pcscd
 ```
+
+For YubiKey, also install `yubico-piv-tool`. For other PIV tokens, follow
+your device's provisioning documentation.
 
 ### Install as a single-file executable
 
@@ -133,9 +143,12 @@ sunduk --help
 
 ## Configuration
 
-### 1. Set up the YubiKey
+### 1. Set up your PIV token
 
 Generate the PIV key and certificate before configuring Sunduk:
+
+> 💡 The script below is written specifically for YubiKey. If you use a different
+> PIV device, follow your hardware documentation and/or adapt the script accordingly.
 
 > ⚠️ The `yubikey-setup` script overwrites PIV slot `9d`. If your YubiKey
 > already holds important keys, **stop and read

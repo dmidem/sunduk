@@ -1,8 +1,8 @@
 # Threat Model
 
 Sunduk protects API tokens **at rest**. It stores them encrypted on disk and
-decrypts them only when needed, using a YubiKey PIV private key that never
-leaves the device.
+decrypts them only when needed, using a PIV private key stored in a hardware
+token that never leaves the device.
 
 That reduces accidental leaks and some local token theft. It does **not** make
 a compromised machine safe — once code runs as you (or as root), the protection
@@ -12,7 +12,7 @@ largely ends.
 token entered interactively
   -> encrypted with the PIV certificate
   -> stored as a CMS file on disk
-  -> decrypted through the YubiKey when needed (PIN + touch)
+  -> decrypted through the PIV hardware token when needed (PIN + optional touch)
   -> passed to the target command via an environment variable
 ```
 
@@ -20,17 +20,17 @@ token entered interactively
 
 | Threat | Protected? | Why |
 |---|:---:|---|
-| Plaintext tokens on disk | ✅ | Stored as encrypted CMS, undecryptable without the YubiKey |
+| Plaintext tokens on disk | ✅ | Stored as encrypted CMS, undecryptable without the hardware token |
 | Private-key extraction | ✅ | Key is generated on-device and never exported |
 | Shell-history / argv leaks | ✅ | Tokens are entered interactively, never passed as arguments |
 | Root compromise | ❌ | Root can read memory, trace processes, swap binaries |
-| Keyloggers | ⚠️ | PIN can be captured; touch helps but isn't a full fix |
+| Keyloggers | ⚠️ | PIN can be captured; physical touch confirmation (if supported by your token) helps but isn't a full fix |
 | Malicious target command | ❌ | The tool you run *receives* the token by design |
 | Compromised user session | ❌ | An attacker acting as you can just run Sunduk |
 | Compromised OpenSSL/OpenSC | ❌ | Sunduk trusts the crypto stack it calls |
 | Token live in the environment | ⚠️ | Exists while the command runs; child processes inherit it |
 | Config / certificate tampering | ⚠️ | Mitigated by file permissions + `--doctor`, not prevented |
-| Lost YubiKey private key | ❌ | No recovery; encrypted tokens become unreadable |
+| Lost hardware token / PIV key | ❌ | No recovery; encrypted tokens become unreadable |
 | Overprivileged / stale tokens | ❌ | Out of scope — limit and rotate tokens server-side |
 
 The rest of this document explains each row.
@@ -46,11 +46,11 @@ Instead of secrets sitting in plaintext —
 ```
 
 — tokens live as encrypted CMS files (`~/.config/sunduk/*.cms`) that cannot be
-decrypted without the YubiKey private key.
+decrypted without the PIV private key.
 
 ### Private-key extraction
 
-The PIV private key is generated **inside** the YubiKey and never written to
+The PIV private key is generated **inside** the hardware token and never written to
 disk. Sunduk asks the device to perform the decrypt operation; the key itself
 stays on the device.
 
@@ -64,7 +64,8 @@ your shell history or a process's argv.
 
 Sunduk also offers, in increasing order of strictness:
 
-- **YubiKey touch** on every decrypt (with `touch-policy=always`);
+- **physical touch** confirmation on every decrypt, if your token supports it (YubiKey:
+  `touch-policy=always`; check your token's documentation for equivalent settings);
 - **isolated-user mode** to run tools as a separate system user;
 - **command SHA-256 pinning** to refuse altered binaries;
 - **`sunduk --doctor`** permission and configuration checks.
@@ -91,13 +92,13 @@ that is malicious as shipped.
 
 If your shell or desktop session is compromised, an attacker can run Sunduk as
 you, alter your scripts, replace user-writable commands, or simply wait for you
-to unlock the YubiKey. Sunduk protects tokens at rest, not a hijacked session.
+to unlock the token. Sunduk protects tokens at rest, not a hijacked session.
 
 ### Keyloggers
 
 The PIV PIN is typed at the host's OpenSC prompt, so a keylogger or malicious
-terminal can capture it. Requiring a physical touch raises the bar but does not
-fully solve this.
+terminal can capture it. Requiring a physical touch confirmation (where supported)
+raises the bar but does not fully solve this.
 
 ### Token exposure while running
 
@@ -124,13 +125,13 @@ chmod 600 ~/.config/sunduk/config.toml ~/.config/sunduk/*.cms
 chmod 644 ~/.config/sunduk/*.pem
 ```
 
-### Lost YubiKey private key
+### Lost hardware token or PIV key
 
-If the YubiKey key is lost, every encrypted token file becomes permanently
-unreadable — Sunduk has no recovery. Plan ahead with a backup YubiKey
-(tokens must be encrypted separately for its certificate, or use a
-multi-recipient CMS workflow), server-side token reissue, or securely stored
-emergency tokens. See [yubikey-setup.md](yubikey-setup.md#backup-and-recovery).
+If the hardware token is lost, every encrypted token file becomes permanently
+unreadable — Sunduk has no recovery. Plan ahead with a backup token (tokens must
+be encrypted separately for its certificate, or use a multi-recipient CMS
+workflow), server-side token reissue, or securely stored emergency tokens.
+See [yubikey-setup.md](yubikey-setup.md#backup-and-recovery).
 
 ### Overprivileged API tokens
 
